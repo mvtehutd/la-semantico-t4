@@ -320,6 +320,9 @@ public class LaParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class Declaracao_localContext extends ParserRuleContext {
+		public Token declaracao;
+		public Token constante;
+		public Token declaracaoTipo;
 		public VariavelContext variavel() {
 			return getRuleContext(VariavelContext.class,0);
 		}
@@ -364,7 +367,7 @@ public class LaParser extends Parser {
 				enterOuterAlt(_localctx, 1);
 				{
 				setState(115);
-				match(T__2);
+				((Declaracao_localContext)_localctx).declaracao = match(T__2);
 				setState(116);
 				variavel();
 				}
@@ -373,7 +376,7 @@ public class LaParser extends Parser {
 				enterOuterAlt(_localctx, 2);
 				{
 				setState(117);
-				match(T__3);
+				((Declaracao_localContext)_localctx).constante = match(T__3);
 				setState(118);
 				match(IDENT);
 				setState(119);
@@ -390,7 +393,7 @@ public class LaParser extends Parser {
 				enterOuterAlt(_localctx, 3);
 				{
 				setState(124);
-				match(T__5);
+				((Declaracao_localContext)_localctx).declaracaoTipo = match(T__5);
 				setState(125);
 				match(IDENT);
 				setState(126);

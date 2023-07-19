@@ -38,6 +38,7 @@ public class TabelaDeSimbolos {
     }
 
     public boolean existe(String nome) {
+        System.out.println("Verificando se existe: "+ nome);
         if (!tabela.containsKey(nome)) {
             for (Map.Entry<String, EntradaTabelaDeSimbolos> entry : tabela.entrySet()) {
                 String key = entry.getKey();
@@ -56,6 +57,7 @@ public class TabelaDeSimbolos {
     }
 
     public TipoLa verificar(String nome) {
+        System.out.println("verificar: " + nome);
         return tabela.get(nome).tipo;
     }
 
@@ -67,6 +69,10 @@ public class TabelaDeSimbolos {
     public boolean verificarPonteiroRegistro(String nome, String nomeVariavel) {
         System.out.println("nome: " + nome);
         return tabela.get(nome).registro.verificarPonteiro(nomeVariavel);
+    }
+
+    public TabelaDeSimbolos recuperaRegistro(String nome){
+        return tabela.get(nome).registro;
     }
 
     public TipoLa verificarTipoRegistro(String nome, String nomeVariavel) {
