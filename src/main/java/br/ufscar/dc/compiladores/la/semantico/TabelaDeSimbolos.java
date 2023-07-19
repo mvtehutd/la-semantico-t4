@@ -58,7 +58,19 @@ public class TabelaDeSimbolos {
 
     public TipoLa verificar(String nome) {
         System.out.println("verificar: " + nome);
-        return tabela.get(nome).tipo;
+        TipoLa tipo = null;
+        if(tabela.get(nome) != null){
+            return tabela.get(nome).tipo;
+        }else{
+            for (Map.Entry<String, EntradaTabelaDeSimbolos> entry : tabela.entrySet()) {
+                String key = entry.getKey();
+                TabelaDeSimbolos tabelaAdicional = tabela.get(key).registro;
+                if (tabelaAdicional != null && tabelaAdicional.existe(nome)) {
+                    return tabelaAdicional.tabela.get(nome).tipo;
+                }
+            }
+        }
+        return tipo;
     }
 
     public boolean verificarPonteiro(String nome) {
@@ -73,6 +85,10 @@ public class TabelaDeSimbolos {
 
     public TabelaDeSimbolos recuperaRegistro(String nome){
         return tabela.get(nome).registro;
+    }
+
+    public Integer retornaNumeroDeElementosDaSubTabela(String nome){
+        return tabela.get(nome).registro.tabela.size();
     }
 
     public TipoLa verificarTipoRegistro(String nome, String nomeVariavel) {

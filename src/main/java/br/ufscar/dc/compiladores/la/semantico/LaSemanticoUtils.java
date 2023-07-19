@@ -199,4 +199,33 @@ public class LaSemanticoUtils {
         }
         return true;
     }
+
+    public static TipoLa retornaTipoLaDoIdentificador(TabelaDeSimbolos tabela,Token token,String tipo){
+        System.out.println("Tipo da entrada: "+ tipo);
+        // verifica se é algum dos tipos padrão
+        switch (tipo) {
+            case
+                    "inteiro":
+                return TipoLa.INTEIRO;
+            case
+                    "literal":
+                return TipoLa.LITERAL;
+            case
+                    "real":
+                return TipoLa.REAL;
+            case
+                    "logico":
+                return TipoLa.LOGICO;
+
+            default:
+                if ((tabela.existe(tipo) && tabela.verificar(tipo) == TipoLa.REGISTRO)) {
+                    return TipoLa.REGISTRO;
+                } else {
+                    LaSemanticoUtils.adicionarErroSemantico(token,
+                            "tipo " + tipo + " nao declarado");
+                }
+                break;
+        }
+        return TipoLa.INVALIDO;
+    }
 }

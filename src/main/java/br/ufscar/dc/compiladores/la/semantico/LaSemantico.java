@@ -12,8 +12,11 @@ import br.ufscar.dc.compiladores.la.semantico.TabelaDeSimbolos.TipoLa;
 import br.ufscar.dc.compiladores.parser.LaBaseVisitor;
 import br.ufscar.dc.compiladores.parser.LaParser;
 import br.ufscar.dc.compiladores.parser.LaParser.CmdAtribuicaoContext;
+import br.ufscar.dc.compiladores.parser.LaParser.CmdChamadaContext;
+import br.ufscar.dc.compiladores.parser.LaParser.Declaracao_globalContext;
 import br.ufscar.dc.compiladores.parser.LaParser.Declaracao_localContext;
 import br.ufscar.dc.compiladores.parser.LaParser.IdentificadorContext;
+import br.ufscar.dc.compiladores.parser.LaParser.ParametroContext;
 import br.ufscar.dc.compiladores.parser.LaParser.RegistroContext;
 import br.ufscar.dc.compiladores.parser.LaParser.TipoContext;
 import br.ufscar.dc.compiladores.parser.LaParser.VariavelContext;
@@ -27,6 +30,56 @@ public class LaSemantico extends LaBaseVisitor<Void> {
     public Void visitPrograma(LaParser.ProgramaContext ctx) {
         tabela = new TabelaDeSimbolos();
         return super.visitPrograma(ctx);
+    }
+
+    @Override
+    public Void visitDeclaracao_global(Declaracao_globalContext ctx) {
+        if (ctx.getStart().getText().equals("funcao")) {
+            TipoLa tipovar = TipoLa.INVALIDO;
+            Boolean tipoPonteiro = false;
+            TabelaDeSimbolos tabelaDoRegistro = null;
+            TabelaDeSimbolos tabelaAdicional = new TabelaDeSimbolos();
+            for (ParametroContext parametroContext : ctx.parametros().parametro()) {
+                String tipo = parametroContext.tipo_estendido().getText();
+                System.out.println("tipo antes: " + tipo);
+                if (tipo.startsWith("^", 0)) {
+                    tipoPonteiro = true;
+                    tipo = tipo.substring(1, tipo.length());
+                }
+                System.out.println("tipo depois: " + tipo);
+                // verifica se é algum dos tipos padrão
+                tipovar = LaSemanticoUtils.retornaTipoLaDoIdentificador(tabela,
+                        parametroContext.identificador(0).IDENT(0).getSymbol(), tipo);
+                // Se ele já existe na tabela de símbolos, então erro de já declarado, senão
+                // adiciona na tabela de símbolos
+                for (IdentificadorContext variavelIdent : parametroContext.identificador()) {
+                    String variavel = variavelIdent.getText();
+                    System.out.println("variavel: " + variavel);
+                    if (tabelaAdicional.existe(variavel)) {
+                        LaSemanticoUtils.adicionarErroSemantico(variavelIdent.IDENT(0).getSymbol(),
+                                "identificador " + variavel + " ja declarado anteriormente");
+                    } else {
+                        System.out.println("Variavel: " + variavel + " tipo: " + tipovar + " Ponteiro: " + tipoPonteiro
+                                + " Tabela do Registro:" + tabelaDoRegistro);
+                        tabelaAdicional.adicionar(variavel, tipovar, tipoPonteiro, tabelaDoRegistro);
+                    }
+                }
+            }
+
+            tipovar = LaSemanticoUtils.retornaTipoLaDoIdentificador(tabela, ctx.IDENT().getSymbol(), ctx.tipo_estendido().getText());
+            String variavel = ctx.IDENT().getText();
+            System.out.println("variavel: " + variavel);
+            if (tabela.existe(variavel)) {
+                LaSemanticoUtils.adicionarErroSemantico(ctx.IDENT().getSymbol(),
+                        "identificador " + variavel + " ja declarado anteriormente");
+            } else {
+                System.out.println("asdsadaVariavel: " + variavel + " tipo: " + tipovar + " Ponteiro: "
+                        + tipoPonteiro + " Tabela Adicional: " + tabelaAdicional);
+                tabela.adicionar(variavel, tipovar, tipoPonteiro, tabelaAdicional);
+            }
+
+        }
+        return super.visitDeclaracao_global(ctx);
     }
 
     // Visitante da Declaração Local que confere erros de declaração
@@ -68,35 +121,12 @@ public class LaSemantico extends LaBaseVisitor<Void> {
                 tipo = tipo.substring(1, tipo.length());
             }
             System.out.println("tipo depois: " + tipo);
-            // verifica se é algum dos tipos padrão
-            switch (tipo) {
-                case
-                        "inteiro":
-                    tipovar = TipoLa.INTEIRO;
-                    break;
-                case
-                        "literal":
-                    tipovar = TipoLa.LITERAL;
-                    break;
-                case
-                        "real":
-                    tipovar = TipoLa.REAL;
-                    break;
-                case
-                        "logico":
-                    tipovar = TipoLa.LOGICO;
-                    break;
-
-                default:
-                    if ((tabela.existe(tipo) && tabela.verificar(tipo) == TipoLa.REGISTRO)) {
-                        tipovar = TipoLa.REGISTRO;
-                        tabelaDoRegistro = tabela.recuperaRegistro(tipo);
-                    }else{
-                        LaSemanticoUtils.adicionarErroSemantico(ctx.variavel().identificador(0).IDENT(0).getSymbol(),
-                                "tipo " + tipo + " nao declarado");
-                    }
-                    break;
+            tipovar = LaSemanticoUtils.retornaTipoLaDoIdentificador(tabela,
+                    ctx.variavel().identificador(0).IDENT(0).getSymbol(), tipo);
+            if (tipovar == TipoLa.REGISTRO) {
+                tabelaDoRegistro = tabela.recuperaRegistro(tipo);
             }
+
             // Se ele já existe na tabela de símbolos, então erro de já declarado, senão
             // adiciona na tabela de símbolos
             for (IdentificadorContext variavelIdent : variavelContext.identificador()) {
@@ -107,7 +137,7 @@ public class LaSemantico extends LaBaseVisitor<Void> {
                             "identificador " + variavel + " ja declarado anteriormente");
                 } else {
                     System.out.println("Variavel: " + variavel + " tipo: " + tipovar + " Ponteiro: " + tipoPonteiro
-                            + " Tabela do Registro:"+ tabelaDoRegistro );
+                            + " Tabela do Registro:" + tabelaDoRegistro);
                     tabelaAdicional.adicionar(variavel, tipovar, tipoPonteiro, tabelaDoRegistro);
                 }
             }
@@ -125,7 +155,7 @@ public class LaSemantico extends LaBaseVisitor<Void> {
                                     "identificador " + variavel + " ja declarado anteriormente");
                         } else {
                             System.out.println("Variavel: " + variavel + " tipo: " + TipoLa.REGISTRO + " Ponteiro: "
-                                    + tipoPonteiro + " Tabela Adicional: " + tabelaAdicional );
+                                    + tipoPonteiro + " Tabela Adicional: " + tabelaAdicional);
                             tabela.adicionar(variavel, TipoLa.REGISTRO, tipoPonteiro, tabelaAdicional);
                         }
                     }
@@ -134,7 +164,7 @@ public class LaSemantico extends LaBaseVisitor<Void> {
 
                     break;
                 case "tipo":
-                    variavel = ctx.IDENT().getText(); 
+                    variavel = ctx.IDENT().getText();
                     if (tabela.existe(variavel)) {
                         LaSemanticoUtils.adicionarErroSemantico(ctx.IDENT().getSymbol(),
                                 "identificador " + variavel + " ja declarado anteriormente");
@@ -153,17 +183,24 @@ public class LaSemantico extends LaBaseVisitor<Void> {
         return super.visitDeclaracao_local(ctx);
     }
 
+
+    @Override
+    public Void visitCmdChamada(CmdChamadaContext ctx) {
+        System.out.println("VISITEI A");
+        return null;
+    }
+
     // Visitante do Identificador confere se não está na tabela de símbolos, gerando
     // erro de não declarado
     @Override
     public Void visitIdentificador(IdentificadorContext ctx) {
         System.out.println(ctx.getText());
-        for (TerminalNode ident : ctx.IDENT()) {   
+        for (TerminalNode ident : ctx.IDENT()) {
             if (!tabela.existe(ident.getText())) {
                 System.out.println("Adicionei erro");
-                    LaSemanticoUtils.adicionarErroSemantico(ctx.IDENT(0).getSymbol(),
-                            "identificador " + ctx.getText() + " nao declarado");
-    
+                LaSemanticoUtils.adicionarErroSemantico(ctx.IDENT(0).getSymbol(),
+                        "identificador " + ctx.getText() + " nao declarado");
+
             }
         }
         return super.visitIdentificador(ctx);
