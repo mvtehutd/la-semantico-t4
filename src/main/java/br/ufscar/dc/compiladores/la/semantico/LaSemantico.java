@@ -12,6 +12,7 @@ import br.ufscar.dc.compiladores.la.semantico.TabelaDeSimbolos.TipoLa;
 import br.ufscar.dc.compiladores.parser.LaBaseVisitor;
 import br.ufscar.dc.compiladores.parser.LaParser;
 import br.ufscar.dc.compiladores.parser.LaParser.CmdAtribuicaoContext;
+import br.ufscar.dc.compiladores.parser.LaParser.CmdContext;
 import br.ufscar.dc.compiladores.parser.LaParser.Declaracao_globalContext;
 import br.ufscar.dc.compiladores.parser.LaParser.Declaracao_localContext;
 import br.ufscar.dc.compiladores.parser.LaParser.Exp_aritmeticaContext;
@@ -89,6 +90,13 @@ public class LaSemantico extends LaBaseVisitor<Void> {
                     ctx.tipo_estendido().getText());
         } else {
             tipovar = null;
+            for (CmdContext cmdContext : ctx.cmd()) {
+                if(cmdContext.cmdRetorne() != null){
+                    LaSemanticoUtils.adicionarErroSemantico(cmdContext.cmdRetorne().retorne,
+                                "comando retorne nao permitido nesse escopo");
+                }
+            }
+            
         }
 
         String variavel = ctx.IDENT().getText();

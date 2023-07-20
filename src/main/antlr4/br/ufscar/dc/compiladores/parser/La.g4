@@ -121,7 +121,7 @@ cmdAtribuicao: '^'? identificador '<-' expressao;
 
 cmdChamada: IDENT '(' expressao (',' expressao)* ')';
 
-cmdRetorne: 'retorne' expressao;
+cmdRetorne: retorne='retorne' expressao;
 
 selecao: item_selecao*;
 

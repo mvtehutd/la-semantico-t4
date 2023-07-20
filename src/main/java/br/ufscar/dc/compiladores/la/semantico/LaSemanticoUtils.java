@@ -252,7 +252,8 @@ public class LaSemanticoUtils {
     public static void insereVariavelNaTabelaSeNaoExistir(TabelaDeSimbolos tabelaParaInserir, String variavelName,
             TipoLa tipoVariavel, Boolean ehPonteiro, TabelaDeSimbolos tabelaAdicional, Token token) {
 
-        if (tabelaParaInserir.existe(variavelName)) {
+        if (tabelaParaInserir.existe(variavelName) ) {
+            System.out.println("Adicionando Erro para variavelaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: " + variavelName);
             LaSemanticoUtils.adicionarErroSemantico(token,
                     "identificador " + variavelName + " ja declarado anteriormente");
         } else {

@@ -52,6 +52,10 @@ public class TabelaDeSimbolos {
         return true;
     }
 
+    public boolean existeNaTabelaPrincipal(String nome){
+        return tabela.containsKey(nome);
+    }
+
     public boolean existeRegistro(String nome, String nomeVariavel) {
         return tabela.get(nome).registro.existe(nomeVariavel);
     }
