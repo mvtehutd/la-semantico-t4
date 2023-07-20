@@ -18,13 +18,15 @@ public class TabelaDeSimbolos {
         String nome;
         TipoLa tipo;
         Boolean ponteiro;
+        Integer tamanhoArray;
         TabelaDeSimbolos registro;
 
-        private EntradaTabelaDeSimbolos(String nome, TipoLa tipo, Boolean ponteiro, TabelaDeSimbolos registro) {
+        private EntradaTabelaDeSimbolos(String nome, TipoLa tipo, Boolean ponteiro, TabelaDeSimbolos registro, Integer tamanhoArray) {
             this.nome = nome;
             this.tipo = tipo;
             this.ponteiro = ponteiro;
             this.registro = registro;
+            this.tamanhoArray = tamanhoArray;
         }
     }
 
@@ -34,8 +36,8 @@ public class TabelaDeSimbolos {
         this.tabela = new HashMap<>();
     }
 
-    public void adicionar(String nome, TipoLa tipo, Boolean ponteiro, TabelaDeSimbolos registro) {
-        tabela.put(nome, new EntradaTabelaDeSimbolos(nome, tipo, ponteiro, registro));
+    public void adicionar(String nome, TipoLa tipo, Boolean ponteiro, TabelaDeSimbolos registro, Integer tamanhoArray) {
+        tabela.put(nome, new EntradaTabelaDeSimbolos(nome, tipo, ponteiro, registro, tamanhoArray));
     }
 
     public boolean existe(String nome) {
@@ -57,7 +59,7 @@ public class TabelaDeSimbolos {
     }
 
     public TipoLa verificar(String nome) {
-        TipoLa tipo = null;
+        TipoLa tipo = TipoLa.INVALIDO;
         if(tabela.get(nome) != null){
             return tabela.get(nome).tipo;
         }else{
@@ -73,6 +75,7 @@ public class TabelaDeSimbolos {
     }
 
     public boolean verificarPonteiro(String nome) {
+        System.out.println("Verificando Ponteiro: "+nome);
         return tabela.get(nome).ponteiro;
     }
 

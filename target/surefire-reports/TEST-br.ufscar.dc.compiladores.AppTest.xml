@@ -15,7 +15,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="BR"/>
     <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-17\bin"/>
-    <property name="sun.java.command" value="C:\Users\CARLOS~1\AppData\Local\Temp\surefire15878309028651894218\surefirebooter7507645735965081092.jar C:\Users\Carlos Eduardo\AppData\Local\Temp\surefire15878309028651894218 2023-07-19T22-00-29_365-jvmRun1 surefire1219530301139783236tmp surefire_011164991283090253086tmp"/>
+    <property name="sun.java.command" value="C:\Users\CARLOS~1\AppData\Local\Temp\surefire1064806063976600912\surefirebooter2638804877655695791.jar C:\Users\Carlos Eduardo\AppData\Local\Temp\surefire1064806063976600912 2023-07-19T23-55-35_009-jvmRun1 surefire10816270648836086219tmp surefire_010745584378750093675tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="C:\Users\Carlos Eduardo\Documents\Projetos\Ufscar\Compiladores\la-semantico-t4\target\test-classes;C:\Users\Carlos Eduardo\Documents\Projetos\Ufscar\Compiladores\la-semantico-t4\target\classes;C:\Users\Carlos Eduardo\.m2\repository\junit\junit\4.11\junit-4.11.jar;C:\Users\Carlos Eduardo\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\Carlos Eduardo\.m2\repository\org\antlr\antlr4\4.11.1\antlr4-4.11.1-complete.jar;C:\Users\Carlos Eduardo\.m2\repository\org\antlr\antlr4-runtime\4.11.1\antlr4-runtime-4.11.1.jar;C:\Users\Carlos Eduardo\.m2\repository\org\antlr\antlr-runtime\3.5.3\antlr-runtime-3.5.3.jar;C:\Users\Carlos Eduardo\.m2\repository\org\antlr\ST4\4.3.4\ST4-4.3.4.jar;C:\Users\Carlos Eduardo\.m2\repository\org\abego\treelayout\org.abego.treelayout.core\1.0.3\org.abego.treelayout.core-1.0.3.jar;C:\Users\Carlos Eduardo\.m2\repository\org\glassfish\javax.json\1.1.4\javax.json-1.1.4.jar;C:\Users\Carlos Eduardo\.m2\repository\com\ibm\icu\icu4j\71.1\icu4j-71.1.jar;"/>
     <property name="sun.cpu.endian" value="little"/>
@@ -30,7 +30,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="surefire.real.class.path" value="C:\Users\CARLOS~1\AppData\Local\Temp\surefire15878309028651894218\surefirebooter7507645735965081092.jar"/>
+    <property name="surefire.real.class.path" value="C:\Users\CARLOS~1\AppData\Local\Temp\surefire1064806063976600912\surefirebooter2638804877655695791.jar"/>
     <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="17.0.6+9-LTS-190"/>

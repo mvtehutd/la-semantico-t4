@@ -18,6 +18,7 @@ import br.ufscar.dc.compiladores.parser.LaParser.CmdChamadaContext;
 import br.ufscar.dc.compiladores.parser.LaParser.CmdEscrevaContext;
 import br.ufscar.dc.compiladores.parser.LaParser.Declaracao_globalContext;
 import br.ufscar.dc.compiladores.parser.LaParser.Declaracao_localContext;
+import br.ufscar.dc.compiladores.parser.LaParser.Exp_aritmeticaContext;
 import br.ufscar.dc.compiladores.parser.LaParser.ExpressaoContext;
 import br.ufscar.dc.compiladores.parser.LaParser.IdentificadorContext;
 import br.ufscar.dc.compiladores.parser.LaParser.ParametroContext;
@@ -67,6 +68,7 @@ public class LaSemantico extends LaBaseVisitor<Void> {
     @Override
     public Void visitDeclaracao_global(Declaracao_globalContext ctx) {
         if (ctx.getStart().getText().equals("funcao")) {
+            Integer dimensao = null;
             TipoLa tipovar = TipoLa.INVALIDO;
             Boolean tipoPonteiro = false;
             TabelaDeSimbolos tabelaDoRegistro = null;
@@ -88,7 +90,7 @@ public class LaSemantico extends LaBaseVisitor<Void> {
                         LaSemanticoUtils.adicionarErroSemantico(variavelIdent.IDENT(0).getSymbol(),
                                 "identificador " + variavel + " ja declarado anteriormente");
                     } else {
-                        tabelaAdicional.adicionar(variavel, tipovar, tipoPonteiro, tabelaDoRegistro);
+                        tabelaAdicional.adicionar(variavel, tipovar, tipoPonteiro, tabelaDoRegistro, dimensao);
                     }
                 }
             }
@@ -100,7 +102,7 @@ public class LaSemantico extends LaBaseVisitor<Void> {
                 LaSemanticoUtils.adicionarErroSemantico(ctx.IDENT().getSymbol(),
                         "identificador " + variavel + " ja declarado anteriormente");
             } else {
-                tabela.adicionar(variavel, tipovar, tipoPonteiro, tabelaAdicional);
+                tabela.adicionar(variavel, tipovar, tipoPonteiro, tabelaAdicional, dimensao);
             }
 
         }
@@ -110,6 +112,7 @@ public class LaSemantico extends LaBaseVisitor<Void> {
     // Visitante da Declaração Local que confere erros de declaração
     @Override
     public Void visitDeclaracao_local(Declaracao_localContext ctx) {
+        Integer dimensao = null;
         List<VariavelContext> listaVariaveis = null;
         TipoContext tipoContextDaVariavel = null;
         switch (ctx.getStart().getText()) {
@@ -139,6 +142,7 @@ public class LaSemantico extends LaBaseVisitor<Void> {
             tabelaAdicional = new TabelaDeSimbolos();
         }
         for (VariavelContext variavelContext : listaVariaveis) {
+
             String tipo = variavelContext.tipo().getText();
             if (tipo.startsWith("^", 0)) {
                 tipoPonteiro = true;
@@ -153,12 +157,20 @@ public class LaSemantico extends LaBaseVisitor<Void> {
             // Se ele já existe na tabela de símbolos, então erro de já declarado, senão
             // adiciona na tabela de símbolos
             for (IdentificadorContext variavelIdent : variavelContext.identificador()) {
+                dimensao = null;
                 String variavel = variavelIdent.getText();
+                for (Exp_aritmeticaContext tamanhoDoArray : variavelIdent.dimensao().exp_aritmetica()) {
+                    dimensao = Integer.parseInt(tamanhoDoArray.getText());
+                    variavel = variavelIdent.IDENT(0).getText();
+                    System.out.println("IdentificadorAntigo: " + variavelIdent.getText() + " IdentificadorNovo: "
+                            + variavel + " Dimensao:" + tamanhoDoArray.getText());
+                }
+
                 if (tabelaAdicional.existe(variavel)) {
                     LaSemanticoUtils.adicionarErroSemantico(variavelIdent.IDENT(0).getSymbol(),
                             "identificador " + variavel + " ja declarado anteriormente");
                 } else {
-                    tabelaAdicional.adicionar(variavel, tipovar, tipoPonteiro, tabelaDoRegistro);
+                    tabelaAdicional.adicionar(variavel, tipovar, tipoPonteiro, tabelaDoRegistro, dimensao);
                 }
             }
         }
@@ -174,7 +186,7 @@ public class LaSemantico extends LaBaseVisitor<Void> {
                                     "identificador " + variavel + " ja declarado anteriormente");
                         } else {
 
-                            tabela.adicionar(variavel, TipoLa.REGISTRO, tipoPonteiro, tabelaAdicional);
+                            tabela.adicionar(variavel, TipoLa.REGISTRO, tipoPonteiro, tabelaAdicional, dimensao);
                         }
                     }
                     break;
@@ -188,7 +200,7 @@ public class LaSemantico extends LaBaseVisitor<Void> {
                                 "identificador " + variavel + " ja declarado anteriormente");
                     } else {
 
-                        tabela.adicionar(variavel, TipoLa.REGISTRO, tipoPonteiro, tabelaAdicional);
+                        tabela.adicionar(variavel, TipoLa.REGISTRO, tipoPonteiro, tabelaAdicional, dimensao);
                     }
                     break;
 
@@ -204,7 +216,9 @@ public class LaSemantico extends LaBaseVisitor<Void> {
     // erro de não declarado
     @Override
     public Void visitIdentificador(IdentificadorContext ctx) {
+        System.out.println("Estou no identificado: " + ctx.getText());
         for (TerminalNode ident : ctx.IDENT()) {
+            System.out.println("Identificador: " + ident.getText());
             if (!tabela.existe(ident.getText())) {
                 LaSemanticoUtils.adicionarErroSemantico(ctx.IDENT(0).getSymbol(),
                         "identificador " + ctx.getText() + " nao declarado");
@@ -220,6 +234,15 @@ public class LaSemantico extends LaBaseVisitor<Void> {
     public Void visitCmdAtribuicao(CmdAtribuicaoContext ctx) {
         TipoLa tipoExpressao = LaSemanticoUtils.verificarTipo(tabela, ctx.expressao());
         String nomeVariavel = ctx.identificador().getText();
+        String nomeVariavelModificada = ctx.identificador().getText();
+        if (!ctx.identificador().dimensao().isEmpty()) {
+            nomeVariavelModificada = ctx.identificador().IDENT(0).getText();
+        }
+        if(!tabela.existe(nomeVariavelModificada)){
+            return super.visitCmdAtribuicao(ctx);
+        }
+
+        System.out.println("Varivael: " + nomeVariavelModificada + " Expressao: " + ctx.expressao().getText() + " TipoExpressao: " + tipoExpressao);
 
         if (tipoExpressao != TipoLa.INVALIDO) {
             TipoLa tipoVariavel = null;
@@ -229,16 +252,16 @@ public class LaSemantico extends LaBaseVisitor<Void> {
                 tipoVariavel = tabela.verificarTipoRegistro(ctx.identificador().IDENT(0).getText(),
                         ctx.identificador().IDENT(1).getText());
             } else {
-                tipoVariavel = LaSemanticoUtils.verificarTipo(tabela, nomeVariavel);
+                tipoVariavel = LaSemanticoUtils.verificarTipo(tabela, nomeVariavelModificada);
             }
             if (LaSemanticoUtils.tiposDiferentes(tipoVariavel, tipoExpressao)) {
                 if (ctx.identificador().ponto != null) {
                     if (tabela.verificarPonteiroRegistro(ctx.identificador().IDENT(0).getText(),
                             ctx.identificador().IDENT(1).getText())) {
-                        nomeVariavel = "^" + nomeVariavel;
+                        nomeVariavel = "^" + nomeVariavelModificada;
                     }
-                } else if (tabela.verificarPonteiro(nomeVariavel)) {
-                    nomeVariavel = "^" + nomeVariavel;
+                } else if (tabela.verificarPonteiro(nomeVariavelModificada)) {
+                    nomeVariavel = "^" + nomeVariavelModificada;
                 }
                 LaSemanticoUtils.adicionarErroSemantico(ctx.identificador().IDENT(0).getSymbol(),
                         "atribuicao nao compativel para " + nomeVariavel);

@@ -159,6 +159,9 @@ public class LaSemanticoUtils {
             if(ctx.identificador().ponto != null){
                 return tabela.verificarTipoRegistro(ctx.identificador().IDENT(0).getText(), ctx.identificador().IDENT(1).getText());
             }
+            if(!ctx.identificador().dimensao().isEmpty()){
+                return tabela.verificar(ctx.identificador().IDENT(0).getText());
+            }
             return tabela.verificar(ctx.identificador().getText());
         }
 
