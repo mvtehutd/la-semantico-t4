@@ -7,23 +7,17 @@ import java.util.List;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import com.ibm.icu.util.GenderInfo.ListGenderStyle;
-
 import br.ufscar.dc.compiladores.la.semantico.TabelaDeSimbolos.EntradaTabelaDeSimbolos;
 import br.ufscar.dc.compiladores.la.semantico.TabelaDeSimbolos.TipoLa;
 import br.ufscar.dc.compiladores.parser.LaBaseVisitor;
 import br.ufscar.dc.compiladores.parser.LaParser;
 import br.ufscar.dc.compiladores.parser.LaParser.CmdAtribuicaoContext;
-import br.ufscar.dc.compiladores.parser.LaParser.CmdChamadaContext;
-import br.ufscar.dc.compiladores.parser.LaParser.CmdEscrevaContext;
 import br.ufscar.dc.compiladores.parser.LaParser.Declaracao_globalContext;
 import br.ufscar.dc.compiladores.parser.LaParser.Declaracao_localContext;
 import br.ufscar.dc.compiladores.parser.LaParser.Exp_aritmeticaContext;
-import br.ufscar.dc.compiladores.parser.LaParser.ExpressaoContext;
 import br.ufscar.dc.compiladores.parser.LaParser.IdentificadorContext;
 import br.ufscar.dc.compiladores.parser.LaParser.ParametroContext;
 import br.ufscar.dc.compiladores.parser.LaParser.Parcela_unarioContext;
-import br.ufscar.dc.compiladores.parser.LaParser.RegistroContext;
 import br.ufscar.dc.compiladores.parser.LaParser.TipoContext;
 import br.ufscar.dc.compiladores.parser.LaParser.VariavelContext;
 
@@ -67,76 +61,73 @@ public class LaSemantico extends LaBaseVisitor<Void> {
 
     @Override
     public Void visitDeclaracao_global(Declaracao_globalContext ctx) {
-        if (ctx.getStart().getText().equals("funcao")) {
-            Integer dimensao = null;
-            TipoLa tipovar = TipoLa.INVALIDO;
-            Boolean tipoPonteiro = false;
-            TabelaDeSimbolos tabelaDoRegistro = null;
-            TabelaDeSimbolos tabelaAdicional = new TabelaDeSimbolos();
-            for (ParametroContext parametroContext : ctx.parametros().parametro()) {
-                String tipo = parametroContext.tipo_estendido().getText();
-                if (tipo.startsWith("^", 0)) {
-                    tipoPonteiro = true;
-                    tipo = tipo.substring(1, tipo.length());
-                }
-                // verifica se é algum dos tipos padrão
-                tipovar = LaSemanticoUtils.retornaTipoLaDoIdentificador(tabela,
-                        parametroContext.identificador(0).IDENT(0).getSymbol(), tipo);
-                // Se ele já existe na tabela de símbolos, então erro de já declarado, senão
-                // adiciona na tabela de símbolos
-                for (IdentificadorContext variavelIdent : parametroContext.identificador()) {
-                    String variavel = variavelIdent.getText();
-                    if (tabelaAdicional.existe(variavel)) {
-                        LaSemanticoUtils.adicionarErroSemantico(variavelIdent.IDENT(0).getSymbol(),
-                                "identificador " + variavel + " ja declarado anteriormente");
-                    } else {
-                        tabelaAdicional.adicionar(variavel, tipovar, tipoPonteiro, tabelaDoRegistro, dimensao);
-                    }
-                }
+        TipoLa tipovar = TipoLa.INVALIDO;
+        Boolean tipoPonteiro = false;
+        TabelaDeSimbolos tabelaDoRegistro = null;
+        TabelaDeSimbolos tabelaAdicional = new TabelaDeSimbolos();
+        for (ParametroContext parametroContext : ctx.parametros().parametro()) {
+            String tipo = parametroContext.tipo_estendido().getText();
+            if (tipo.startsWith("^", 0)) {
+                tipoPonteiro = true;
+                tipo = tipo.substring(1, tipo.length());
             }
+            // verifica se é algum dos tipos padrão
+            tipovar = LaSemanticoUtils.retornaTipoLaDoIdentificador(tabela,
+                    parametroContext.identificador(0).IDENT(0).getSymbol(), tipo);
+            // Se ele já existe na tabela de símbolos, então erro de já declarado, senão
+            // adiciona na tabela de símbolos
+            for (IdentificadorContext variavelIdent : parametroContext.identificador()) {
+                String variavel = variavelIdent.getText();
+                LaSemanticoUtils.insereVariavelNaTabelaSeNaoExistir(tabelaAdicional, variavel, tipovar, tipoPonteiro,
+                        tabelaDoRegistro,
+                        variavelIdent.IDENT(0).getSymbol());
+            }
+        }
 
+        if (ctx.getStart().getText().equals("funcao")) {
             tipovar = LaSemanticoUtils.retornaTipoLaDoIdentificador(tabela, ctx.IDENT().getSymbol(),
                     ctx.tipo_estendido().getText());
-            String variavel = ctx.IDENT().getText();
-            if (tabela.existe(variavel)) {
-                LaSemanticoUtils.adicionarErroSemantico(ctx.IDENT().getSymbol(),
-                        "identificador " + variavel + " ja declarado anteriormente");
-            } else {
-                tabela.adicionar(variavel, tipovar, tipoPonteiro, tabelaAdicional, dimensao);
-            }
-
+        } else {
+            tipovar = null;
         }
+
+        String variavel = ctx.IDENT().getText();
+        LaSemanticoUtils.insereVariavelNaTabelaSeNaoExistir(tabela, variavel, tipovar, tipoPonteiro, tabelaAdicional,
+                ctx.IDENT().getSymbol());
+
         return super.visitDeclaracao_global(ctx);
     }
 
     // Visitante da Declaração Local que confere erros de declaração
     @Override
     public Void visitDeclaracao_local(Declaracao_localContext ctx) {
-        Integer dimensao = null;
-        List<VariavelContext> listaVariaveis = null;
+        List<VariavelContext> listaVariaveis = new ArrayList<VariavelContext>();
         TipoContext tipoContextDaVariavel = null;
+        Boolean ehConstante = false;
+        TipoLa tipovar = TipoLa.INVALIDO;
         switch (ctx.getStart().getText()) {
             case "declare":
                 listaVariaveis = Arrays.asList(ctx.variavel());
                 tipoContextDaVariavel = ctx.variavel().tipo();
                 break;
             case "constante":
-
+                tipovar = LaSemanticoUtils.retornaTipoLaDoIdentificador(tabela,
+                        ctx.IDENT().getSymbol(), ctx.tipo_basico().getText());
+                ehConstante = true;
                 break;
             case "tipo":
-                listaVariaveis = new ArrayList<VariavelContext>();
                 tipoContextDaVariavel = ctx.tipo();
                 break;
 
             default:
                 break;
         }
-        TipoLa tipovar = TipoLa.INVALIDO;
+
         Boolean tipoPonteiro = false;
         Boolean registro = false;
         TabelaDeSimbolos tabelaDoRegistro = null;
         TabelaDeSimbolos tabelaAdicional = tabela;
-        if (tipoContextDaVariavel.registro() != null) {
+        if (!ehConstante && tipoContextDaVariavel.registro() != null) {
             listaVariaveis = tipoContextDaVariavel.registro().variavel();
             registro = true;
             tabelaAdicional = new TabelaDeSimbolos();
@@ -157,56 +148,43 @@ public class LaSemantico extends LaBaseVisitor<Void> {
             // Se ele já existe na tabela de símbolos, então erro de já declarado, senão
             // adiciona na tabela de símbolos
             for (IdentificadorContext variavelIdent : variavelContext.identificador()) {
-                dimensao = null;
                 String variavel = variavelIdent.getText();
                 for (Exp_aritmeticaContext tamanhoDoArray : variavelIdent.dimensao().exp_aritmetica()) {
-                    dimensao = Integer.parseInt(tamanhoDoArray.getText());
                     variavel = variavelIdent.IDENT(0).getText();
                     System.out.println("IdentificadorAntigo: " + variavelIdent.getText() + " IdentificadorNovo: "
                             + variavel + " Dimensao:" + tamanhoDoArray.getText());
                 }
-
-                if (tabelaAdicional.existe(variavel)) {
-                    LaSemanticoUtils.adicionarErroSemantico(variavelIdent.IDENT(0).getSymbol(),
-                            "identificador " + variavel + " ja declarado anteriormente");
-                } else {
-                    tabelaAdicional.adicionar(variavel, tipovar, tipoPonteiro, tabelaDoRegistro, dimensao);
-                }
+                LaSemanticoUtils.insereVariavelNaTabelaSeNaoExistir(tabelaAdicional, variavel, tipovar, tipoPonteiro,
+                        tabelaDoRegistro, variavelIdent.IDENT(0).getSymbol());
             }
         }
 
+        String variavel = null;
         if (registro) {
-            String variavel = null;
             switch (ctx.getStart().getText()) {
                 case "declare":
                     for (IdentificadorContext variavelIdent : ctx.variavel().identificador()) {
                         variavel = variavelIdent.getText();
-                        if (tabela.existe(variavel)) {
-                            LaSemanticoUtils.adicionarErroSemantico(variavelIdent.IDENT(0).getSymbol(),
-                                    "identificador " + variavel + " ja declarado anteriormente");
-                        } else {
-
-                            tabela.adicionar(variavel, TipoLa.REGISTRO, tipoPonteiro, tabelaAdicional, dimensao);
-                        }
+                        LaSemanticoUtils.insereVariavelNaTabelaSeNaoExistir(tabela, variavel, TipoLa.REGISTRO,
+                                tipoPonteiro,
+                                tabelaAdicional, variavelIdent.IDENT(0).getSymbol());
                     }
-                    break;
-                case "constante":
-
                     break;
                 case "tipo":
                     variavel = ctx.IDENT().getText();
-                    if (tabela.existe(variavel)) {
-                        LaSemanticoUtils.adicionarErroSemantico(ctx.IDENT().getSymbol(),
-                                "identificador " + variavel + " ja declarado anteriormente");
-                    } else {
-
-                        tabela.adicionar(variavel, TipoLa.REGISTRO, tipoPonteiro, tabelaAdicional, dimensao);
-                    }
+                    LaSemanticoUtils.insereVariavelNaTabelaSeNaoExistir(tabela, variavel, TipoLa.REGISTRO, tipoPonteiro,
+                            tabelaAdicional, ctx.IDENT().getSymbol());
                     break;
 
                 default:
                     break;
             }
+        }
+
+        if (ehConstante) {
+            variavel = ctx.IDENT().getText();
+            LaSemanticoUtils.insereVariavelNaTabelaSeNaoExistir(tabela, variavel, tipovar, tipoPonteiro, null,
+                    ctx.IDENT().getSymbol());
         }
 
         return super.visitDeclaracao_local(ctx);
@@ -238,11 +216,12 @@ public class LaSemantico extends LaBaseVisitor<Void> {
         if (!ctx.identificador().dimensao().isEmpty()) {
             nomeVariavelModificada = ctx.identificador().IDENT(0).getText();
         }
-        if(!tabela.existe(nomeVariavelModificada)){
+        if (!tabela.existe(nomeVariavelModificada)) {
             return super.visitCmdAtribuicao(ctx);
         }
 
-        System.out.println("Varivael: " + nomeVariavelModificada + " Expressao: " + ctx.expressao().getText() + " TipoExpressao: " + tipoExpressao);
+        System.out.println("Varivael: " + nomeVariavelModificada + " Expressao: " + ctx.expressao().getText()
+                + " TipoExpressao: " + tipoExpressao);
 
         if (tipoExpressao != TipoLa.INVALIDO) {
             TipoLa tipoVariavel = null;

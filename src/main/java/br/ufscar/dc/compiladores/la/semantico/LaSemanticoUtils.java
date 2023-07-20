@@ -18,7 +18,7 @@ import br.ufscar.dc.compiladores.parser.LaParser.Termo_logicoContext;
 
 public class LaSemanticoUtils {
     public static List<String> errosSemanticos = new ArrayList<>();
-    
+
     // Mensagens erros
     public static void adicionarErroSemantico(Token t, String mensagem) {
         int linha = t.getLine();
@@ -28,7 +28,8 @@ public class LaSemanticoUtils {
     // Verifica os tipos da expressão
     public static TabelaDeSimbolos.TipoLa verificarTipo(TabelaDeSimbolos tabela, ExpressaoContext expressaoContext) {
         TabelaDeSimbolos.TipoLa ret = null;
-        // Percorre os termos lógicos e, se forem iguais retorna o tipo, senão retorna o tipo inválido
+        // Percorre os termos lógicos e, se forem iguais retorna o tipo, senão retorna o
+        // tipo inválido
         for (Termo_logicoContext ta : expressaoContext.termo_logico()) {
             TabelaDeSimbolos.TipoLa aux = verificarTipo(tabela, ta);
             if (ret == null) {
@@ -42,9 +43,11 @@ public class LaSemanticoUtils {
     }
 
     // verifica os tipos do termo lógico
-    public static TabelaDeSimbolos.TipoLa verificarTipo(TabelaDeSimbolos tabela, Termo_logicoContext termoLogicoContext) {
+    public static TabelaDeSimbolos.TipoLa verificarTipo(TabelaDeSimbolos tabela,
+            Termo_logicoContext termoLogicoContext) {
         TabelaDeSimbolos.TipoLa ret = null;
-        // Percorre os fatores lógicos e, se forem iguais retorna o tipo, senão retorna o tipo inválido
+        // Percorre os fatores lógicos e, se forem iguais retorna o tipo, senão retorna
+        // o tipo inválido
         for (Fator_logicoContext ta : termoLogicoContext.fator_logico()) {
             TabelaDeSimbolos.TipoLa aux = verificarTipo(tabela, ta);
             if (ret == null) {
@@ -58,15 +61,18 @@ public class LaSemanticoUtils {
     }
 
     // Se for Fator Lógico, manda verificar a parcela lógica
-    public static TabelaDeSimbolos.TipoLa verificarTipo(TabelaDeSimbolos tabela, Fator_logicoContext fatorLogicoContext) {
+    public static TabelaDeSimbolos.TipoLa verificarTipo(TabelaDeSimbolos tabela,
+            Fator_logicoContext fatorLogicoContext) {
         return verificarTipo(tabela, fatorLogicoContext.parcela_logica());
 
     }
 
-    // verifica os tipos da parcela lógica. 
-    public static TabelaDeSimbolos.TipoLa verificarTipo(TabelaDeSimbolos tabela, Parcela_logicaContext parcelaLogicaContext) {
-        // Se for 'verdadeiro' ou 'falso', já retorna o tipo lógico, senão verifica a expressão relacional
-        if(parcelaLogicaContext.getText().equals("verdadeiro") || parcelaLogicaContext.getText().equals("falso")){
+    // verifica os tipos da parcela lógica.
+    public static TabelaDeSimbolos.TipoLa verificarTipo(TabelaDeSimbolos tabela,
+            Parcela_logicaContext parcelaLogicaContext) {
+        // Se for 'verdadeiro' ou 'falso', já retorna o tipo lógico, senão verifica a
+        // expressão relacional
+        if (parcelaLogicaContext.getText().equals("verdadeiro") || parcelaLogicaContext.getText().equals("falso")) {
             return TipoLa.LOGICO;
         } else {
             return verificarTipo(tabela, parcelaLogicaContext.exp_relacional());
@@ -74,24 +80,28 @@ public class LaSemanticoUtils {
     }
 
     // verifica os tipos da expressão relacional
-    public static TabelaDeSimbolos.TipoLa verificarTipo(TabelaDeSimbolos tabela, Exp_relacionalContext expressaoRelacionalContext) {
-        // Se tiver operador relacional, então é do tipo lógico, senão verifica a expressão aritmética
-        if(expressaoRelacionalContext.op_relacional() != null){
+    public static TabelaDeSimbolos.TipoLa verificarTipo(TabelaDeSimbolos tabela,
+            Exp_relacionalContext expressaoRelacionalContext) {
+        // Se tiver operador relacional, então é do tipo lógico, senão verifica a
+        // expressão aritmética
+        if (expressaoRelacionalContext.op_relacional() != null) {
             return TipoLa.LOGICO;
-        } else{
+        } else {
             return verificarTipo(tabela, expressaoRelacionalContext.primeiraExp);
         }
     }
-    
+
     // verifica os tipos da expressão aritmética
-    public static TabelaDeSimbolos.TipoLa verificarTipo(TabelaDeSimbolos tabela, Exp_aritmeticaContext expressaoContext) {
+    public static TabelaDeSimbolos.TipoLa verificarTipo(TabelaDeSimbolos tabela,
+            Exp_aritmeticaContext expressaoContext) {
         TabelaDeSimbolos.TipoLa ret = null;
-        // Percorre os termos verificando os tipos e os retorna. Se forem diferentes, retorna o tipo inválido
+        // Percorre os termos verificando os tipos e os retorna. Se forem diferentes,
+        // retorna o tipo inválido
         for (TermoContext ta : expressaoContext.termo()) {
             TabelaDeSimbolos.TipoLa aux = verificarTipo(tabela, ta);
             if (ret == null) {
                 ret = aux;
-            } else if(tiposDiferentes(aux, ret) && aux != TabelaDeSimbolos.TipoLa.INVALIDO) {
+            } else if (tiposDiferentes(aux, ret) && aux != TabelaDeSimbolos.TipoLa.INVALIDO) {
                 ret = TabelaDeSimbolos.TipoLa.INVALIDO;
             }
         }
@@ -102,7 +112,8 @@ public class LaSemanticoUtils {
     // verifica os tipos do termo
     public static TabelaDeSimbolos.TipoLa verificarTipo(TabelaDeSimbolos tabela, LaParser.TermoContext ctx) {
         TabelaDeSimbolos.TipoLa ret = null;
-        // Percorre os fatores verificando e retornando seus tipos. Se forem diferentes, retorna o tipo inválido
+        // Percorre os fatores verificando e retornando seus tipos. Se forem diferentes,
+        // retorna o tipo inválido
         for (FatorContext fa : ctx.fator()) {
             TabelaDeSimbolos.TipoLa aux = verificarTipo(tabela, fa);
             if (ret == null) {
@@ -117,7 +128,8 @@ public class LaSemanticoUtils {
     // verifica os tipos do fator
     public static TabelaDeSimbolos.TipoLa verificarTipo(TabelaDeSimbolos tabela, LaParser.FatorContext ctx) {
         TabelaDeSimbolos.TipoLa ret = null;
-        // Percorre as parcelas verificando e retornando seus tipos. Se forem diferentes, retorna o tipo inválido
+        // Percorre as parcelas verificando e retornando seus tipos. Se forem
+        // diferentes, retorna o tipo inválido
         for (ParcelaContext fa : ctx.parcela()) {
             TabelaDeSimbolos.TipoLa aux = verificarTipo(tabela, fa);
             if (ret == null) {
@@ -154,38 +166,42 @@ public class LaSemanticoUtils {
         if (ctx.NUM_REAL() != null) {
             return TabelaDeSimbolos.TipoLa.REAL;
         }
-        
-        if(ctx.identificador() != null || ctx.ponteiro != null){
-            if(ctx.identificador().ponto != null){
-                return tabela.verificarTipoRegistro(ctx.identificador().IDENT(0).getText(), ctx.identificador().IDENT(1).getText());
+
+        if (ctx.identificador() != null || ctx.ponteiro != null) {
+            if (ctx.identificador().ponto != null) {
+                return tabela.verificarTipoRegistro(ctx.identificador().IDENT(0).getText(),
+                        ctx.identificador().IDENT(1).getText());
             }
-            if(!ctx.identificador().dimensao().isEmpty()){
+            if (!ctx.identificador().dimensao().isEmpty()) {
                 return tabela.verificar(ctx.identificador().IDENT(0).getText());
             }
             return tabela.verificar(ctx.identificador().getText());
         }
 
-        if(ctx.IDENT() != null){
+        if (ctx.IDENT() != null) {
             return tabela.verificar(ctx.IDENT().getText());
         }
-        // se não for nenhum dos tipos acima, dentre os casos de teste, só pode ser 
+        // se não for nenhum dos tipos acima, dentre os casos de teste, só pode ser
         // uma expressão entre parêntesis
         return verificarTipo(tabela, ctx.expPar);
     }
 
     // verifica os tipos da parcela não unária
-    public static TabelaDeSimbolos.TipoLa verificarTipo(TabelaDeSimbolos tabela, LaParser.Parcela_nao_unarioContext ctx) {
-        // verifica o tipo da variável que está registrada na tabela de símbolos ou então é uma cadeia, do tipo literal 
+    public static TabelaDeSimbolos.TipoLa verificarTipo(TabelaDeSimbolos tabela,
+            LaParser.Parcela_nao_unarioContext ctx) {
+        // verifica o tipo da variável que está registrada na tabela de símbolos ou
+        // então é uma cadeia, do tipo literal
         if (ctx.identificador() != null) {
-            if(ctx.identificador().ponto != null){
-                return tabela.verificarTipoRegistro(ctx.identificador().IDENT(0).getText(), ctx.identificador().IDENT(1).getText());
+            if (ctx.identificador().ponto != null) {
+                return tabela.verificarTipoRegistro(ctx.identificador().IDENT(0).getText(),
+                        ctx.identificador().IDENT(1).getText());
             }
             return tabela.verificar(ctx.identificador().getText());
-        }else {
+        } else {
             return TabelaDeSimbolos.TipoLa.LITERAL;
         }
     }
-    
+
     // verifica o tipo da variável
     public static TabelaDeSimbolos.TipoLa verificarTipo(TabelaDeSimbolos tabela, String nomeVar) {
         return tabela.verificar(nomeVar);
@@ -193,18 +209,19 @@ public class LaSemanticoUtils {
 
     // método que compara se dois tipos não são compatíveis.
     // ele retorna true caso forem diferentes ou false caso forem compatíveis
-    public static boolean tiposDiferentes(TipoLa primeiro, TipoLa segundo){
-        if(primeiro == segundo){
+    public static boolean tiposDiferentes(TipoLa primeiro, TipoLa segundo) {
+        if (primeiro == segundo) {
             return false;
         }
         // garante que considere a compatibilidade entre inteiro e real
-        if((primeiro == TipoLa.INTEIRO || primeiro == TipoLa.REAL) && (segundo == TipoLa.INTEIRO || segundo == TipoLa.REAL)){
+        if ((primeiro == TipoLa.INTEIRO || primeiro == TipoLa.REAL)
+                && (segundo == TipoLa.INTEIRO || segundo == TipoLa.REAL)) {
             return false;
         }
         return true;
     }
 
-    public static TipoLa retornaTipoLaDoIdentificador(TabelaDeSimbolos tabela,Token token,String tipo){
+    public static TipoLa retornaTipoLaDoIdentificador(TabelaDeSimbolos tabela, Token token, String tipo) {
         // verifica se é algum dos tipos padrão
         switch (tipo) {
             case
@@ -230,5 +247,17 @@ public class LaSemanticoUtils {
                 break;
         }
         return TipoLa.INVALIDO;
+    }
+
+    public static void insereVariavelNaTabelaSeNaoExistir(TabelaDeSimbolos tabelaParaInserir, String variavelName,
+            TipoLa tipoVariavel, Boolean ehPonteiro, TabelaDeSimbolos tabelaAdicional, Token token) {
+
+        if (tabelaParaInserir.existe(variavelName)) {
+            LaSemanticoUtils.adicionarErroSemantico(token,
+                    "identificador " + variavelName + " ja declarado anteriormente");
+        } else {
+
+            tabelaParaInserir.adicionar(variavelName, tipoVariavel, ehPonteiro, tabelaAdicional);
+        }
     }
 }
