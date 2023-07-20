@@ -157,10 +157,16 @@ public class LaSemanticoUtils {
         
         if(ctx.identificador() != null || ctx.ponteiro != null){
             if(ctx.identificador().ponto != null){
-                System.out.println(ctx.identificador().IDENT(0).getText() + "." + ctx.identificador().IDENT(1).getText());
                 return tabela.verificarTipoRegistro(ctx.identificador().IDENT(0).getText(), ctx.identificador().IDENT(1).getText());
             }
+            if(!ctx.identificador().dimensao().isEmpty()){
+                return tabela.verificar(ctx.identificador().IDENT(0).getText());
+            }
             return tabela.verificar(ctx.identificador().getText());
+        }
+
+        if(ctx.IDENT() != null){
+            return tabela.verificar(ctx.IDENT().getText());
         }
         // se não for nenhum dos tipos acima, dentre os casos de teste, só pode ser 
         // uma expressão entre parêntesis
@@ -172,7 +178,6 @@ public class LaSemanticoUtils {
         // verifica o tipo da variável que está registrada na tabela de símbolos ou então é uma cadeia, do tipo literal 
         if (ctx.identificador() != null) {
             if(ctx.identificador().ponto != null){
-                System.out.println(ctx.identificador().IDENT(0).getText() + "." + ctx.identificador().IDENT(1).getText());
                 return tabela.verificarTipoRegistro(ctx.identificador().IDENT(0).getText(), ctx.identificador().IDENT(1).getText());
             }
             return tabela.verificar(ctx.identificador().getText());
@@ -183,7 +188,6 @@ public class LaSemanticoUtils {
     
     // verifica o tipo da variável
     public static TabelaDeSimbolos.TipoLa verificarTipo(TabelaDeSimbolos tabela, String nomeVar) {
-        System.out.println("Variavel: " + nomeVar);
         return tabela.verificar(nomeVar);
     }
 
@@ -198,5 +202,33 @@ public class LaSemanticoUtils {
             return false;
         }
         return true;
+    }
+
+    public static TipoLa retornaTipoLaDoIdentificador(TabelaDeSimbolos tabela,Token token,String tipo){
+        // verifica se é algum dos tipos padrão
+        switch (tipo) {
+            case
+                    "inteiro":
+                return TipoLa.INTEIRO;
+            case
+                    "literal":
+                return TipoLa.LITERAL;
+            case
+                    "real":
+                return TipoLa.REAL;
+            case
+                    "logico":
+                return TipoLa.LOGICO;
+
+            default:
+                if ((tabela.existe(tipo) && tabela.verificar(tipo) == TipoLa.REGISTRO)) {
+                    return TipoLa.REGISTRO;
+                } else {
+                    LaSemanticoUtils.adicionarErroSemantico(token,
+                            "tipo " + tipo + " nao declarado");
+                }
+                break;
+        }
+        return TipoLa.INVALIDO;
     }
 }
