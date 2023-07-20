@@ -1,5 +1,6 @@
 package br.ufscar.dc.compiladores.la.semantico;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,7 +39,6 @@ public class TabelaDeSimbolos {
     }
 
     public boolean existe(String nome) {
-        System.out.println("Verificando se existe: "+ nome);
         if (!tabela.containsKey(nome)) {
             for (Map.Entry<String, EntradaTabelaDeSimbolos> entry : tabela.entrySet()) {
                 String key = entry.getKey();
@@ -57,7 +57,6 @@ public class TabelaDeSimbolos {
     }
 
     public TipoLa verificar(String nome) {
-        System.out.println("verificar: " + nome);
         TipoLa tipo = null;
         if(tabela.get(nome) != null){
             return tabela.get(nome).tipo;
@@ -74,12 +73,10 @@ public class TabelaDeSimbolos {
     }
 
     public boolean verificarPonteiro(String nome) {
-        System.out.println("nome: " + nome);
         return tabela.get(nome).ponteiro;
     }
 
     public boolean verificarPonteiroRegistro(String nome, String nomeVariavel) {
-        System.out.println("nome: " + nome);
         return tabela.get(nome).registro.verificarPonteiro(nomeVariavel);
     }
 
@@ -93,6 +90,10 @@ public class TabelaDeSimbolos {
 
     public TipoLa verificarTipoRegistro(String nome, String nomeVariavel) {
         return tabela.get(nome).registro.verificar(nomeVariavel);
+    }
+
+    public Collection<EntradaTabelaDeSimbolos> retornarParametrosDaFuncao(String nomeFuncao){
+        return tabela.get(nomeFuncao).registro.tabela.values();
     }
 
 }

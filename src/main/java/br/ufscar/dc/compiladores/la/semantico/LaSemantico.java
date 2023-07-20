@@ -2,21 +2,26 @@ package br.ufscar.dc.compiladores.la.semantico;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import com.ibm.icu.util.GenderInfo.ListGenderStyle;
 
+import br.ufscar.dc.compiladores.la.semantico.TabelaDeSimbolos.EntradaTabelaDeSimbolos;
 import br.ufscar.dc.compiladores.la.semantico.TabelaDeSimbolos.TipoLa;
 import br.ufscar.dc.compiladores.parser.LaBaseVisitor;
 import br.ufscar.dc.compiladores.parser.LaParser;
 import br.ufscar.dc.compiladores.parser.LaParser.CmdAtribuicaoContext;
 import br.ufscar.dc.compiladores.parser.LaParser.CmdChamadaContext;
+import br.ufscar.dc.compiladores.parser.LaParser.CmdEscrevaContext;
 import br.ufscar.dc.compiladores.parser.LaParser.Declaracao_globalContext;
 import br.ufscar.dc.compiladores.parser.LaParser.Declaracao_localContext;
+import br.ufscar.dc.compiladores.parser.LaParser.ExpressaoContext;
 import br.ufscar.dc.compiladores.parser.LaParser.IdentificadorContext;
 import br.ufscar.dc.compiladores.parser.LaParser.ParametroContext;
+import br.ufscar.dc.compiladores.parser.LaParser.Parcela_unarioContext;
 import br.ufscar.dc.compiladores.parser.LaParser.RegistroContext;
 import br.ufscar.dc.compiladores.parser.LaParser.TipoContext;
 import br.ufscar.dc.compiladores.parser.LaParser.VariavelContext;
@@ -33,6 +38,33 @@ public class LaSemantico extends LaBaseVisitor<Void> {
     }
 
     @Override
+    public Void visitParcela_unario(Parcela_unarioContext ctx) {
+        if (ctx.IDENT() != null) {
+            if (ctx.expressao().size() != tabela.retornaNumeroDeElementosDaSubTabela(ctx.IDENT().getText())) {
+                LaSemanticoUtils.adicionarErroSemantico(ctx.IDENT().getSymbol(),
+                        "incompatibilidade de parametros na chamada de " + ctx.IDENT().getText());
+            } else {
+                TipoLa tipoExpressao = null;
+                TipoLa tipoParametro = null;
+                Collection<EntradaTabelaDeSimbolos> parametrosDaFuncao = tabela
+                        .retornarParametrosDaFuncao(ctx.IDENT().getText());
+                Integer i = 0;
+                for (EntradaTabelaDeSimbolos parametro : parametrosDaFuncao) {
+                    tipoExpressao = LaSemanticoUtils.verificarTipo(tabela, ctx.expressao(i++));
+                    tipoParametro = parametro.tipo;
+                    System.out.println("Funcao: " + ctx.IDENT() + " Parametro: " + parametro.nome + " TipoExpressao: "
+                            + tipoExpressao + " TipoParametro: " + tipoParametro);
+                    if (!tipoExpressao.equals(tipoParametro)) {
+                        LaSemanticoUtils.adicionarErroSemantico(ctx.IDENT().getSymbol(),
+                                "incompatibilidade de parametros na chamada de " + ctx.IDENT().getText());
+                    }
+                }
+            }
+        }
+        return super.visitParcela_unario(ctx);
+    }
+
+    @Override
     public Void visitDeclaracao_global(Declaracao_globalContext ctx) {
         if (ctx.getStart().getText().equals("funcao")) {
             TipoLa tipovar = TipoLa.INVALIDO;
@@ -41,12 +73,10 @@ public class LaSemantico extends LaBaseVisitor<Void> {
             TabelaDeSimbolos tabelaAdicional = new TabelaDeSimbolos();
             for (ParametroContext parametroContext : ctx.parametros().parametro()) {
                 String tipo = parametroContext.tipo_estendido().getText();
-                System.out.println("tipo antes: " + tipo);
                 if (tipo.startsWith("^", 0)) {
                     tipoPonteiro = true;
                     tipo = tipo.substring(1, tipo.length());
                 }
-                System.out.println("tipo depois: " + tipo);
                 // verifica se é algum dos tipos padrão
                 tipovar = LaSemanticoUtils.retornaTipoLaDoIdentificador(tabela,
                         parametroContext.identificador(0).IDENT(0).getSymbol(), tipo);
@@ -54,27 +84,22 @@ public class LaSemantico extends LaBaseVisitor<Void> {
                 // adiciona na tabela de símbolos
                 for (IdentificadorContext variavelIdent : parametroContext.identificador()) {
                     String variavel = variavelIdent.getText();
-                    System.out.println("variavel: " + variavel);
                     if (tabelaAdicional.existe(variavel)) {
                         LaSemanticoUtils.adicionarErroSemantico(variavelIdent.IDENT(0).getSymbol(),
                                 "identificador " + variavel + " ja declarado anteriormente");
                     } else {
-                        System.out.println("Variavel: " + variavel + " tipo: " + tipovar + " Ponteiro: " + tipoPonteiro
-                                + " Tabela do Registro:" + tabelaDoRegistro);
                         tabelaAdicional.adicionar(variavel, tipovar, tipoPonteiro, tabelaDoRegistro);
                     }
                 }
             }
 
-            tipovar = LaSemanticoUtils.retornaTipoLaDoIdentificador(tabela, ctx.IDENT().getSymbol(), ctx.tipo_estendido().getText());
+            tipovar = LaSemanticoUtils.retornaTipoLaDoIdentificador(tabela, ctx.IDENT().getSymbol(),
+                    ctx.tipo_estendido().getText());
             String variavel = ctx.IDENT().getText();
-            System.out.println("variavel: " + variavel);
             if (tabela.existe(variavel)) {
                 LaSemanticoUtils.adicionarErroSemantico(ctx.IDENT().getSymbol(),
                         "identificador " + variavel + " ja declarado anteriormente");
             } else {
-                System.out.println("asdsadaVariavel: " + variavel + " tipo: " + tipovar + " Ponteiro: "
-                        + tipoPonteiro + " Tabela Adicional: " + tabelaAdicional);
                 tabela.adicionar(variavel, tipovar, tipoPonteiro, tabelaAdicional);
             }
 
@@ -115,14 +140,12 @@ public class LaSemantico extends LaBaseVisitor<Void> {
         }
         for (VariavelContext variavelContext : listaVariaveis) {
             String tipo = variavelContext.tipo().getText();
-            System.out.println("tipo antes: " + tipo);
             if (tipo.startsWith("^", 0)) {
                 tipoPonteiro = true;
                 tipo = tipo.substring(1, tipo.length());
             }
-            System.out.println("tipo depois: " + tipo);
             tipovar = LaSemanticoUtils.retornaTipoLaDoIdentificador(tabela,
-                    ctx.variavel().identificador(0).IDENT(0).getSymbol(), tipo);
+                    variavelContext.identificador(0).IDENT(0).getSymbol(), tipo);
             if (tipovar == TipoLa.REGISTRO) {
                 tabelaDoRegistro = tabela.recuperaRegistro(tipo);
             }
@@ -131,13 +154,10 @@ public class LaSemantico extends LaBaseVisitor<Void> {
             // adiciona na tabela de símbolos
             for (IdentificadorContext variavelIdent : variavelContext.identificador()) {
                 String variavel = variavelIdent.getText();
-                System.out.println("variavel: " + variavel);
                 if (tabelaAdicional.existe(variavel)) {
                     LaSemanticoUtils.adicionarErroSemantico(variavelIdent.IDENT(0).getSymbol(),
                             "identificador " + variavel + " ja declarado anteriormente");
                 } else {
-                    System.out.println("Variavel: " + variavel + " tipo: " + tipovar + " Ponteiro: " + tipoPonteiro
-                            + " Tabela do Registro:" + tabelaDoRegistro);
                     tabelaAdicional.adicionar(variavel, tipovar, tipoPonteiro, tabelaDoRegistro);
                 }
             }
@@ -149,13 +169,11 @@ public class LaSemantico extends LaBaseVisitor<Void> {
                 case "declare":
                     for (IdentificadorContext variavelIdent : ctx.variavel().identificador()) {
                         variavel = variavelIdent.getText();
-                        System.out.println("variavel: " + variavel);
                         if (tabela.existe(variavel)) {
                             LaSemanticoUtils.adicionarErroSemantico(variavelIdent.IDENT(0).getSymbol(),
                                     "identificador " + variavel + " ja declarado anteriormente");
                         } else {
-                            System.out.println("Variavel: " + variavel + " tipo: " + TipoLa.REGISTRO + " Ponteiro: "
-                                    + tipoPonteiro + " Tabela Adicional: " + tabelaAdicional);
+
                             tabela.adicionar(variavel, TipoLa.REGISTRO, tipoPonteiro, tabelaAdicional);
                         }
                     }
@@ -169,8 +187,7 @@ public class LaSemantico extends LaBaseVisitor<Void> {
                         LaSemanticoUtils.adicionarErroSemantico(ctx.IDENT().getSymbol(),
                                 "identificador " + variavel + " ja declarado anteriormente");
                     } else {
-                        System.out.println("Variavel: " + variavel + " tipo: " + TipoLa.REGISTRO + " Ponteiro: "
-                                + tipoPonteiro + " Tabela Adicional: " + tabelaAdicional);
+
                         tabela.adicionar(variavel, TipoLa.REGISTRO, tipoPonteiro, tabelaAdicional);
                     }
                     break;
@@ -183,21 +200,12 @@ public class LaSemantico extends LaBaseVisitor<Void> {
         return super.visitDeclaracao_local(ctx);
     }
 
-
-    @Override
-    public Void visitCmdChamada(CmdChamadaContext ctx) {
-        System.out.println("VISITEI A");
-        return null;
-    }
-
     // Visitante do Identificador confere se não está na tabela de símbolos, gerando
     // erro de não declarado
     @Override
     public Void visitIdentificador(IdentificadorContext ctx) {
-        System.out.println(ctx.getText());
         for (TerminalNode ident : ctx.IDENT()) {
             if (!tabela.existe(ident.getText())) {
-                System.out.println("Adicionei erro");
                 LaSemanticoUtils.adicionarErroSemantico(ctx.IDENT(0).getSymbol(),
                         "identificador " + ctx.getText() + " nao declarado");
 
