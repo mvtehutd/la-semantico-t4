@@ -26,7 +26,6 @@ public class Principal {
         // E Cria um objeto para escrever no arquivo
         try (PrintWriter pw = new PrintWriter(new File(args[1]))) {
             // Verifica se há erros
-            System.out.println("Iniciando Lista de Erros");
             for (String string : LaSemanticoUtils.errosSemanticos) {
                 pw.println(string);
                 System.out.println(string);

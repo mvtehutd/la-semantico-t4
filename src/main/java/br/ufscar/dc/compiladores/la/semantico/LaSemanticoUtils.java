@@ -248,17 +248,5 @@ public class LaSemanticoUtils {
         }
         return TipoLa.INVALIDO;
     }
-
-    public static void insereVariavelNaTabelaSeNaoExistir(TabelaDeSimbolos tabelaParaInserir, String variavelName,
-            TipoLa tipoVariavel, Boolean ehPonteiro, TabelaDeSimbolos tabelaAdicional, Token token) {
-
-        if (tabelaParaInserir.existe(variavelName) ) {
-            System.out.println("Adicionando Erro para variavelaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: " + variavelName);
-            LaSemanticoUtils.adicionarErroSemantico(token,
-                    "identificador " + variavelName + " ja declarado anteriormente");
-        } else {
-
-            tabelaParaInserir.adicionar(variavelName, tipoVariavel, ehPonteiro, tabelaAdicional);
-        }
-    }
+    
 }
