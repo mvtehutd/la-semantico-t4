@@ -69,9 +69,9 @@ declaracoes: decl_local_global*;
 
 decl_local_global: declaracao_local | declaracao_global;
 
-declaracao_local: 'declare' variavel
-                | 'constante' IDENT ':' tipo_basico '=' valor_constante
-                | 'tipo' IDENT ':' tipo;
+declaracao_local: declaracao = 'declare' variavel
+                | constante = 'constante' IDENT ':' tipo_basico '=' valor_constante
+                | declaracaoTipo = 'tipo' IDENT ':' tipo;
 
 variavel: identificador (',' identificador)* ':' tipo;
 
@@ -121,7 +121,7 @@ cmdAtribuicao: '^'? identificador '<-' expressao;
 
 cmdChamada: IDENT '(' expressao (',' expressao)* ')';
 
-cmdRetorne: 'retorne' expressao;
+cmdRetorne: retorne='retorne' expressao;
 
 selecao: item_selecao*;
 

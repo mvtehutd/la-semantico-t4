@@ -28,11 +28,9 @@ public class Principal {
             // Verifica se há erros
             for (String string : LaSemanticoUtils.errosSemanticos) {
                 pw.println(string);
-                System.out.println(string);
             }
             if(!LaSemanticoUtils.errosSemanticos.isEmpty()){
                 pw.println("Fim da compilacao");
-                System.out.println("Fim da compilacao");
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
