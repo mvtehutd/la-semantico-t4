@@ -56,6 +56,7 @@ public class TabelaDeSimbolos {
         tabela.put(nome, new EntradaTabelaDeSimbolos(nome, tipo, ponteiro, registro));
     }
 
+    // Verifica se a variavel existe na tabela de simbolos percorrendo as subtabelas tbm
     public boolean existe(String nome) {
         if (tabela.containsKey(nome)) {
             return true;
@@ -79,7 +80,6 @@ public class TabelaDeSimbolos {
     }
 
     // Método para formatar a tabela, incluindo as sub-tabelas
-    // Método para formatar a tabela, incluindo as sub-tabelas
     public String formatarTabela(String indent) {
         StringBuilder sb = new StringBuilder();
 
@@ -99,6 +99,7 @@ public class TabelaDeSimbolos {
         System.out.println(formatarTabela(""));
     }
 
+    // Verifica o tipo da variavel percorrendo as subtabelas tbm.
     public TipoLa verificar(String nome) {
         TipoLa tipo = TipoLa.INVALIDO;
         if (tabela.get(nome) != null) {
@@ -131,6 +132,7 @@ public class TabelaDeSimbolos {
         return tabela.get(nome).registro.tabela.size();
     }
 
+    // Verifica o tipo da variavel do registro, percorrendo as subtabelas tbm
     public TipoLa verificarTipoRegistro(String nome, String nomeVariavel) {
         if(tabela.get(nome) != null){
             return tabela.get(nome).registro.verificar(nomeVariavel);

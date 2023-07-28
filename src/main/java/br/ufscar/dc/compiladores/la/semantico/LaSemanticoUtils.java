@@ -221,6 +221,14 @@ public class LaSemanticoUtils {
         return true;
     }
 
+    /**
+     * Retorna o TipoLa do tipo da variavel passado como String no parametro
+     * 
+     * @param tabela tabela usada para verificar se o tipo declarado é um nome de registro
+     * @param token token que vai ser usado para identificar a linha quando gerar um erro semantico
+     * @param tipo O tipo da variavel que vai ser usado para associar a um TipoLa
+     * @return
+     */
     public static TipoLa retornaTipoLaDoIdentificador(TabelaDeSimbolos tabela, Token token, String tipo) {
         // verifica se é algum dos tipos padrão
         switch (tipo) {
