@@ -2284,6 +2284,7 @@ public class LaParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class CmdRetorneContext extends ParserRuleContext {
+		public Token retorne;
 		public ExpressaoContext expressao() {
 			return getRuleContext(ExpressaoContext.class,0);
 		}
@@ -2313,7 +2314,7 @@ public class LaParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(400);
-			match(T__35);
+			((CmdRetorneContext)_localctx).retorne = match(T__35);
 			setState(401);
 			expressao();
 			}
